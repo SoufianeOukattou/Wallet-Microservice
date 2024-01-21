@@ -1,0 +1,75 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+    ports:
+      - "3306:3306"
+
+  controle-server:
+    build:
+      context: ./EurekaServer
+      dockerfile: Dockerfile
+    container_name: controle-server
+    ports:
+      - "8761:8761"
+    expose:
+      - "8761"
+    depends_on:
+      - mysql
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      retries: 3
+
+  controle-users:
+    build:
+      context: ./Users
+      dockerfile: Dockerfile
+    container_name: controle-users
+    ports:
+      - "8081:8081"
+    expose:
+      - "8081"
+    depends_on:
+      - controle-server
+      - mysql
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 10s
+      retries: 3
+
+  controle-transactions:
+    build:
+      context: ./Transactions
+      dockerfile: Dockerfile
+    container_name: controle-transactions
+    ports:
+      - "8082:8082"
+    expose:
+      - "8082"
+    depends_on:
+      - controle-server
+      - mysql
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 10s
+      retries: 3
+
+  controle-category:
+    build:
+      context: ./Category
+      dockerfile: Dockerfile
+    container_name: controle-category
+    ports:
+      - "8083:8083"
+    expose:
+      - "8083"
+    depends_on:
+      - controle-server
+      - mysql
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      interval: 10s
+      retries: 3
